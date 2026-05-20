@@ -136,6 +136,11 @@ func OcvpEsxiHostResource() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"initial_fault_domain_host_distribution": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"is_vsan_byol_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -184,6 +189,10 @@ func OcvpEsxiHostResource() *schema.Resource {
 				Computed: true,
 			},
 			"compartment_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"compute_fault_domain": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -457,6 +466,10 @@ func (s *OcvpEsxiHostResourceCrud) Create() error {
 	if hostShapeName, ok := s.D.GetOkExists("host_shape_name"); ok {
 		tmp := hostShapeName.(string)
 		request.HostShapeName = &tmp
+	}
+
+	if initialFaultDomainHostDistribution, ok := s.D.GetOkExists("initial_fault_domain_host_distribution"); ok {
+		request.InitialFaultDomainHostDistribution = oci_ocvp.FaultDomainHostDistributionModesEnum(initialFaultDomainHostDistribution.(string))
 	}
 
 	if isVsanByolEnabled, ok := s.D.GetOkExists("is_vsan_byol_enabled"); ok {
@@ -806,6 +819,10 @@ func (s *OcvpEsxiHostResourceCrud) SetData() error {
 		s.D.Set("compute_availability_domain", *s.Res.ComputeAvailabilityDomain)
 	}
 
+	if s.Res.ComputeFaultDomain != nil {
+		s.D.Set("compute_fault_domain", *s.Res.ComputeFaultDomain)
+	}
+
 	if s.Res.ComputeInstanceId != nil {
 		s.D.Set("compute_instance_id", *s.Res.ComputeInstanceId)
 	}
@@ -850,6 +867,8 @@ func (s *OcvpEsxiHostResourceCrud) SetData() error {
 	if s.Res.HostShapeName != nil {
 		s.D.Set("host_shape_name", *s.Res.HostShapeName)
 	}
+
+	s.D.Set("initial_fault_domain_host_distribution", s.Res.InitialFaultDomainHostDistribution)
 
 	if s.Res.IsBillingContinuationInProgress != nil {
 		s.D.Set("is_billing_continuation_in_progress", *s.Res.IsBillingContinuationInProgress)
@@ -971,15 +990,21 @@ func (s *OcvpEsxiHostResourceCrud) ReplaceHost(failedEsxiHostId string) error {
 	replaceHostRequest.RequestMetadata.RetryPolicy = tfresource.GetRetryPolicy(s.DisableNotFoundRetries, "ocvp")
 	replaceHostRequest.EsxiHostId = &failedEsxiHostId
 
+	replaceHostDetails := oci_ocvp.ReplaceHostDetails{}
 	if vcfAllocationId, ok := s.D.GetOkExists("vcf_byol_allocation_id"); ok {
 		tmp := vcfAllocationId.(string)
-		replaceHostRequest.ReplaceHostDetails = oci_ocvp.ReplaceHostDetails{VcfByolAllocationId: &tmp}
+		replaceHostDetails.VcfByolAllocationId = &tmp
 	}
+	if initialFaultDomainHostDistribution, ok := s.D.GetOkExists("initial_fault_domain_host_distribution"); ok {
+		replaceHostDetails.InitialFaultDomainHostDistribution = oci_ocvp.FaultDomainHostDistributionModesEnum(initialFaultDomainHostDistribution.(string))
+	}
+	replaceHostRequest.ReplaceHostDetails = replaceHostDetails
 
 	replaceHostResponse, replaceHostErr := s.Client.ReplaceHost(context.Background(), replaceHostRequest)
 	if replaceHostErr != nil {
 		return replaceHostErr
 	}
+
 	workId := replaceHostResponse.OpcWorkRequestId
 	s.setEsxiHostIdFromWorkRequest(workId)
 	return s.getEsxiHostFromWorkRequest(workId, tfresource.GetRetryPolicy(s.DisableNotFoundRetries, "ocvp"), oci_ocvp.ActionTypesCreated, s.D.Timeout(schema.TimeoutCreate))
@@ -1073,6 +1098,10 @@ func EsxiHostSummaryToMap(obj oci_ocvp.EsxiHostSummary) map[string]interface{} {
 
 	if obj.ComputeAvailabilityDomain != nil {
 		result["compute_availability_domain"] = string(*obj.ComputeAvailabilityDomain)
+	}
+
+	if obj.ComputeFaultDomain != nil {
+		result["compute_fault_domain"] = string(*obj.ComputeFaultDomain)
 	}
 
 	if obj.ComputeInstanceId != nil {
