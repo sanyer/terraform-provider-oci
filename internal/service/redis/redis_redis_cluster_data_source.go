@@ -72,6 +72,14 @@ func (s *RedisRedisClusterDataSourceCrud) SetData() error {
 
 	s.D.Set("cluster_mode", s.Res.ClusterMode)
 
+	if s.Res.ClusterReplicationTopology != nil {
+		s.D.Set("cluster_replication_topology", []interface{}{ClusterReplicationTopologyToMap(s.Res.ClusterReplicationTopology)})
+	} else {
+		s.D.Set("cluster_replication_topology", nil)
+	}
+
+	s.D.Set("cluster_role", s.Res.ClusterRole)
+
 	if s.Res.CompartmentId != nil {
 		s.D.Set("compartment_id", *s.Res.CompartmentId)
 	}
@@ -122,6 +130,10 @@ func (s *RedisRedisClusterDataSourceCrud) SetData() error {
 
 	if s.Res.OciCacheConfigSetId != nil {
 		s.D.Set("oci_cache_config_set_id", *s.Res.OciCacheConfigSetId)
+	}
+
+	if s.Res.PrimaryClusterId != nil {
+		s.D.Set("primary_cluster_id", *s.Res.PrimaryClusterId)
 	}
 
 	if s.Res.PrimaryEndpointIpAddress != nil {
