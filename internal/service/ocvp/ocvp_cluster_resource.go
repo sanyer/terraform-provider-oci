@@ -221,6 +221,12 @@ func OcvpClusterResource() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"initial_fault_domain_host_distribution": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			"initial_host_ocpu_count": {
 				Type:     schema.TypeFloat,
 				Optional: true,
@@ -507,6 +513,10 @@ func (s *OcvpClusterResourceCrud) Create() error {
 
 	if initialCommitment, ok := s.D.GetOkExists("initial_commitment"); ok {
 		request.InitialCommitment = oci_ocvp.CommitmentEnum(initialCommitment.(string))
+	}
+
+	if initialFaultDomainHostDistribution, ok := s.D.GetOkExists("initial_fault_domain_host_distribution"); ok {
+		request.InitialFaultDomainHostDistribution = oci_ocvp.FaultDomainHostDistributionModesEnum(initialFaultDomainHostDistribution.(string))
 	}
 
 	if initialHostOcpuCount, ok := s.D.GetOkExists("initial_host_ocpu_count"); ok {
@@ -865,6 +875,8 @@ func (s *OcvpClusterResourceCrud) SetData() error {
 	s.D.Set("freeform_tags", s.Res.FreeformTags)
 
 	s.D.Set("initial_commitment", s.Res.InitialCommitment)
+
+	s.D.Set("initial_fault_domain_host_distribution", s.Res.InitialFaultDomainHostDistribution)
 
 	if s.Res.InitialHostOcpuCount != nil {
 		s.D.Set("initial_host_ocpu_count", *s.Res.InitialHostOcpuCount)
