@@ -1,3 +1,13 @@
+## 9.1.0 (September 9, 2026)
+
+### Added
+- Support for Configurable fault domain
+- Redis CRR secondary and standalone conversion support with tests and documentation
+
+### Bug Fix
+- Fix ResolverEndpoint security attributes state handling
+- ignore empty string for maximum_surge and maximum_unavailable
+
 ## 9.0.0 (September 2, 2026)
 
 ### Added

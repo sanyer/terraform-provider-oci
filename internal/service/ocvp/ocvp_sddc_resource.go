@@ -653,6 +653,12 @@ func OcvpSddcResource() *schema.Resource {
 										Computed: true,
 										ForceNew: true,
 									},
+									"initial_fault_domain_host_distribution": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
+										ForceNew: true,
+									},
 									"initial_host_ocpu_count": {
 										Type:     schema.TypeFloat,
 										Optional: true,
@@ -1049,6 +1055,10 @@ func (s *OcvpSddcResourceCrud) Create() error {
 		} else {
 			return errors.New(fmt.Sprintf("cannot map initial commitment %s", tmp))
 		}
+	}
+
+	if initialFaultDomainHostDistribution, ok := s.getOkExistsClusterConfigurationProperty("initial_fault_domain_host_distribution"); ok {
+		initialClusterConfiguration.InitialFaultDomainHostDistribution = oci_ocvp.FaultDomainHostDistributionModesEnum(initialFaultDomainHostDistribution.(string))
 	}
 
 	instanceDisplayNamePrefixDeprecated, okDeprecated := s.D.GetOkExists("instance_display_name_prefix")
@@ -2184,6 +2194,8 @@ func InitialClusterConfigurationToMap(obj oci_ocvp.InitialClusterConfiguration,
 	}
 
 	result["initial_commitment"] = string(obj.InitialCommitment)
+
+	result["initial_fault_domain_host_distribution"] = string(obj.InitialFaultDomainHostDistribution)
 
 	if obj.InitialHostOcpuCount != nil {
 		result["initial_host_ocpu_count"] = float32(*obj.InitialHostOcpuCount)
